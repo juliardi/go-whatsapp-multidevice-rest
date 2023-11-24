@@ -317,6 +317,53 @@ func WhatsAppLogout(jid string) error {
 	return errors.New("WhatsApp Client is not Valid")
 }
 
+func WhatsAppIsLoggedIn(jid string) bool {
+	if WhatsAppClient[jid] != nil {
+		// Make Sure WhatsApp Client is Connected
+		if WhatsAppClient[jid].IsConnected() {
+			// Make Sure WhatsApp Client is Logged In
+			if WhatsAppClient[jid].IsLoggedIn() {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func WhatsAppGetUserInfo(jid string) (result map[string]interface{}, err error) {
+	if WhatsAppClient[jid] != nil {
+		// Make Sure WhatsApp Client is Connected
+		if WhatsAppClient[jid].IsConnected() {
+			// Make Sure WhatsApp Client is Logged In
+			if WhatsAppClient[jid].IsLoggedIn() {
+				var jids []types.JID
+
+				jids = append(jids, *WhatsAppClient[jid].Store.ID)
+				resp, err := WhatsAppClient[jid].GetUserInfo(jids)
+
+				if err != nil {
+					return nil, err
+				}
+
+
+				result = make(map[string]interface{})
+
+				for _, userInfo := range resp {
+					result["status"] = userInfo.Status
+					result["picture_id"] = userInfo.PictureID
+					result["devices"] = userInfo.Devices
+					result["verified_name"] = userInfo.VerifiedName
+				}
+
+				return result, nil
+			}
+		}
+	}
+
+	return nil, errors.New("WhatsApp Client is not Valid")
+}
+
 func WhatsAppIsClientOK(jid string) error {
 	// Make Sure WhatsApp Client is Connected
 	if !WhatsAppClient[jid].IsConnected() {

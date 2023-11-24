@@ -181,6 +181,35 @@ func Registered(c echo.Context) error {
 	return router.ResponseSuccess(c, "WhatsApp Personal ID is Registered")
 }
 
+func GetIsLoggedIn(c echo.Context) error {
+	jid := jwtPayload(c).JID
+
+	isLoggedIn := pkgWhatsApp.WhatsAppIsLoggedIn(jid)
+
+	if isLoggedIn {
+		return router.ResponseSuccessWithData(c, "WhatsApp Client is Logged In", map[string]interface{}{
+			"is_logged_in": true,
+		})
+	}
+
+	return router.ResponseSuccessWithData(c, "WhatsApp Client is Not Logged In", map[string]interface{}{
+			"is_logged_in": false,
+	})
+}
+
+func GetUserInfo(c echo.Context) error {
+	var err error
+	jid := jwtPayload(c).JID
+
+	userInfo, err := pkgWhatsApp.WhatsAppGetUserInfo(jid)
+
+	if err != nil {
+		return router.ResponseInternalError(c, err.Error())
+	}
+
+	return router.ResponseSuccessWithData(c, "Successfully List User Information", userInfo)
+}
+
 // GetGroup
 // @Summary     Get Joined Groups Information
 // @Description Get Joined Groups Information from WhatsApp
